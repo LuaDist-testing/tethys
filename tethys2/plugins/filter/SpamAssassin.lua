@@ -34,7 +34,7 @@ function SpamAssassin:filterMessage(to, state, filtered)
 				line = s:receive("*l")
 			end
 			if i then
-				self.server:logDebug("SpamAssasin: '%s' '%s' '%s' :: '%s'", spam, level, max, tostring(line))
+				self.server:log("SpamAssasin: '%s' '%s' '%s' :: '%s'", spam, level, max, tostring(line))
 				table.insert(state.data, 1, "X-Spam-Flag: "..(spam:lower()=="true" and "YES" or "NO"))
 				table.insert(state.data, 2, ("X-Spam-Status: %s, score=%s required=%s tests=%s"):format((spam:lower()=="true" and "Yes" or "No"), level, max, line or "[No Data]"))
 			end

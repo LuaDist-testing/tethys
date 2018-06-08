@@ -33,7 +33,7 @@ function Sendmail:thread(...)
 		},
 	}
 
-	for i, addr in ipairs(arg) do
+	for i, addr in ipairs{...} do
 		local account, host = util.addressRouteStrip(addr)
 		if account and host then
 			table.insert(route_raw.rcpt, {account=account, host=host})
@@ -74,7 +74,7 @@ function Sendmail:thread(...)
 end
 
 function Sendmail:start(...)
-	local args = arg
+	local args = {...}
 	local thread = coroutine.create(function() self:thread(unpack(args)) end)
 	self.scheduler:register(thread)
 	self.scheduler.traps[thread] = function(self2, thread, success, errmsg)

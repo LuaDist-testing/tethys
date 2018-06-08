@@ -25,7 +25,7 @@ function State:removeOrder(command)
 end
 
 function State:requireOrder(...)
-	for i, com in ipairs(arg) do
+	for i, com in ipairs{...} do
 		if not self.order[com] then return false end
 	end
 	return true

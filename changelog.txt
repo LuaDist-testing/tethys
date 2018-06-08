@@ -1,18 +1,17 @@
 changelog.keys = {
+        C = "Core",
         m = "Misc",
         B = "Bug",
 	P = "Plugins",
         V = "Version",
 }
 changelog.text = [[
-[B]- SMTPSender correctly handles multiple greeting lines
-[P]- Added a SpamAssassin plugin (requires a spamd daemon)
-[P]- Added FixMail plugin that can well, fix mails (add missing date, ...)
-[B]- Fixed LocalDrop to work
-[B]- Fixed SendMail to allow to send to external emails
-[m]- Allow SQL objects to reconnect if connection is lost
-[B]- Fix handling of some mime messages in MIMEMail
-[m]- Iconv dependancy (for MIMEMail)
+[C]- Allows to specify a maximun number of thread spawned (config command "max_threads = X")
+[C]- Allows to specify a timeout on socket operations to kill clients that keep connections open forever
+[m]- Self contained version available (contains all needed lua libs and lua itself)
+[C]- Allows to specify a maximun number of connections from a single IP
+[C]- Two process models to choose from: lua coroutines or process forking
+[P]- New "smtp" plugin type, allows to extend the smtp command-set
 
-[V]- Tethys 2.0.1 aka "All your moons are belong to us!"
+[V]- Tethys 2.0.3 aka "All your processes are belong to us"
 ]]

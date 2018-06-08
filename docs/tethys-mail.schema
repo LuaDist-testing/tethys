@@ -1,0 +1,28 @@
+############################################
+############################################
+# Extra emails settings for LDAP
+# Tethys can work without it, but it will 
+# be basic
+############################################
+############################################
+
+attributetype ( 2.5.4.3.1.1.1.1.1.1.1.40.1 NAME 'mailType'
+        DESC 'Mail account type (account, alias, forward, deposit)'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE)
+
+attributetype ( 2.5.4.3.1.1.1.1.1.1.1.40.2 NAME 'mailParams'
+        DESC 'Mail account type parameters'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15)
+
+objectclass ( 2.5.6.9.1.1.1.1.1.1.1.40 NAME 'mailAccount'
+        DESC 'Allows tethys and other complient smtp to understand email accounts in LDAP'
+        SUP top STRUCTURAL
+        MUST ( mail $ mailType )
+        MAY (description $ mailParams $ userPassword) )
+
+objectclass ( 2.5.6.9.1.1.1.1.1.1.1.41 NAME 'mailAccountSupplemental'
+        DESC 'Allows tethys and other complient smtp to understand email accounts in LDAP'
+        SUP top AUXILIARY
+        MUST ( mail $ mailType )
+        MAY (mailParams) )
+

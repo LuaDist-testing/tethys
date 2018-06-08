@@ -1,6 +1,7 @@
 module(..., package.seeall)
 
 local oo = require "loop.simple"
+local Relaydir = require'tethys2.util.Relaydir'
 local Server = require'tethys2.core.Server'
 local SMTPSender = require'tethys2.core.SMTPSender'
 local fam = require('fam')
@@ -17,10 +18,10 @@ function SenderServer:thread()
 	self:daemonize()
 
 	local maildir = config.settings.deposit.relay_maildir
+	local rdir = Relaydir.new(maildir.."/.maildir")
+	rdir:checkRepository()
+
 	local fam_conn = fam.open()
-	lfs.mkdir(maildir.."/.maildir/")
-	lfs.mkdir(maildir.."/.maildir/new")
-	lfs.mkdir(maildir.."/.maildir/retry")
 	fam.monitorDirectory(fam_conn, maildir.."/.maildir/new/")
 	self:log("Monitoring: %s/.maildir/new/", maildir)
 
@@ -48,8 +49,8 @@ function SenderServer:thread()
 		end
 	end)
 	self.scheduler:register(FAMHandler)
-	self.scheduler.traps[FAMHandler] = function(self, thread, success, errmsg)
-		if not success and errmsg then self:logError("%s", errmsg) end
+	self.scheduler.traps[FAMHandler] = function(self2, thread, success, errmsg)
+		if not success and errmsg then self2:logError("%s", errmsg) end
 	end
 
 	-- Handle checking for retries in a thread

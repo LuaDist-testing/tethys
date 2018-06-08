@@ -21,8 +21,14 @@ function SQL:__init(tbl)
 end
 
 function SQL:execute(sql, ...)
-	sql = sql:format(base.unpack(arg))
-	local res, err = self.con:execute(sql)
+	sql = sql:format(...)
+	local res, err
+
+	if self.con then
+		res, err = self.con:execute(sql)
+	else
+		err = "SQL Module: server has gone away"
+	end
 	if err and err:find("server has gone away") then
 		self.con = self.env:connect(self.con_info.base, self.con_info.user, self.con_info.pass, self.con_info.host)
 		if self.con then
@@ -51,6 +57,7 @@ end
 
 function SQL:lastId()
 	local cur = self:execute("SELECT LAST_INSERT_ID()")
+	if not cur then return nil end
 	local row = cur:fetch ({}, "n")
 	local id = nil
 	if row then id = base.tonumber(row[1]) end
@@ -60,6 +67,7 @@ end
 
 function SQL:selectOneRow(sql)
 	local cur = self:execute(sql)
+	if not cur then return nil end
 	local row = cur:fetch ({}, "a")
 	cur:close()
 	return row

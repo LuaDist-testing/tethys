@@ -24,6 +24,27 @@ function FixMail:filterMessage(to, state, filtered)
 		self.server:logDebug("Fixing date header in mail")
 	end
 
+	-- Mail has date but replace it with current date to deter spammers
+	if config.settings.filter.fixmail.replace.date then
+		table.insert(state.data, 1, os.date("Date: %d %b %Y %H:%M:%S %z"))
+
+		-- Replace Date header
+		local last_header = nil
+		for i = 2, #(state.data) do
+			local line = state.data[i]
+			if line == "" then break end
+
+			local x, y, header, value = line:find("^([Dd][Aa][Tt][Ee]): *(.*)$")
+			if header then
+				state.data[i] = "X-Tethys-Original-" .. state.data[i]
+				break
+			end
+		end
+
+		table.insert(fixed, "date_replace")
+		self.server:logDebug("Replaced date header in mail")
+	end
+
 	-- Mail has no envelope header
 	if config.settings.filter.fixmail.fix.envelope and not mime.mail.headers["x-tethys-smtp-envelope"] then
 		for i, to in pairs(state.to) do

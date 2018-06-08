@@ -71,8 +71,10 @@ function MIMEMail:parse(only_header)
 	if self.mail.headers["content-type"] and self.mail.headers["content-type"]:find("multipart/") then
 		local i, j
 		i, j, subboundary = self.mail.headers["content-type"]:find('boundary="?([^"]+)"?')
-		subboundary = "--"..subboundary
-		subboundary_end = subboundary.."--"
+		if subboundary then
+			subboundary = "--"..subboundary
+			subboundary_end = subboundary.."--"
+		end
 	end
 
 	local i = header_end
@@ -92,13 +94,13 @@ function MIMEMail:parse(only_header)
 			-- Ok a normal body line, decode if needed
 			local set_next = false
 			local no_insert = false
-			if self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"] == "quoted-printable" then
+			if self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"]:lower() == "quoted-printable" then
 				local str, res, j =  line, "", i
 				if line:sub(#line) == "=" then
 					set_next = true
 				end
 				line = mime.unqp(line)
-			elseif self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"] == "base64" then
+			elseif self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"]:lower() == "base64" then
 			end
 			if not next_line_append then
 				if not no_insert then table.insert(self.mail.body, (line or "")) end
@@ -113,7 +115,7 @@ function MIMEMail:parse(only_header)
 	end
 
 	-- If the body is in base64 we finish it by concatenating all lines
-	if self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"] == "base64" then
+	if self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"]:lower() == "base64" then
 		local whole = table.concat(self.mail.body)
 		self.mail.body = { whole }
 	end

@@ -24,7 +24,7 @@ SMTPReceiver.codes =
 	BAD_USER = 	"550 %s\r\n",
 
 	AUTH_CONTINUE = "334 %s\r\n",
-	AUTH_OK = 	"334 %s\r\n",
+	AUTH_OK = 	"235 %s\r\n",
 	AUTH_KO = 	"535 %s\r\n",
 	AUTH_ERROR = 	"501 %s\r\n",
 }
@@ -57,7 +57,7 @@ function SMTPReceiver:resolveAccount(account, host)
 		for addr in data.param:gmatch("([^,]+@[^,]+)") do
 			local naccount, nhost = util.addressRouteStrip(addr)
 			if naccount and nhost then
-				self.server:log("[ALIAS RESOLVER] %s@%s => %s@%s", account, host, naccount, nhost)
+				self.server:logDebug("[ALIAS RESOLVER] %s@%s => %s@%s", account, host, naccount, nhost)
 				local tmp = self:resolveAccount(naccount, nhost)
 				if tmp then
 					for i, d in ipairs(tmp) do table.insert(ret, d) end
@@ -167,12 +167,16 @@ function SMTPReceiver:handleAUTH(params)
 
 	if params:upper() == "LOGIN" then
 		self:sendStatus(self.codes.AUTH_CONTINUE, "VXNlcm5hbWU6")
-		local line = self.socket:receive()
+		local line, err = self.socket:receive()
+		while err == "timeout" do line, err = self.socket:receive() end
 		if not line then return end
+		self.server:logDebug("<<%s", line)
 		user = mime.unb64(line)
 		self:sendStatus(self.codes.AUTH_CONTINUE, "UGFzc3dvcmQ6")
-		local line = self.socket:receive()
+		local line, err = self.socket:receive()
+		while err == "timeout" do line, err = self.socket:receive() end
 		if not line then return end
+		self.server:logDebug("<<%s", line)
 		pass = mime.unb64(line)
 --[[	elseif params:upper() == "PLAIN" then
 		state.sendStatus(s, codes.AUTH_CONTINUE, "")
@@ -256,7 +260,7 @@ function SMTPReceiver:handleRCPT(params)
 						if depo_param == "" then depo_param = nil end
 						self.state:addTo(data.account, data.host, { deposit=deposit, params=depo_param }, account, host)
 					else
-						self.server.logError("Unknown user in deposit table: "..data.param)
+						self.server:logError("Unknown user in deposit table: "..data.param)
 					end
 				else
 					-- Normal account
@@ -326,32 +330,54 @@ function SMTPReceiver:handleQUIT(params)
 	return true
 end
 
+function SMTPReceiver:checkTimeout()
+	-- No timeout
+	if not config.settings.socket_timeout then return false end
+
+	if os.time() - self.start_time > config.settings.socket_timeout then
+		return true
+	else
+		return false
+	end
+end
+
 function SMTPReceiver:handle()
 	self.state = State.new()
 
 	self.allowRelay = false
-	local dhost = self.socket:getpeername()
+	local dhost = self.raw_socket:getpeername()
 	if config.settings.relay.allow_ip[dhost] then
 		self.allowRelay = true
-		self.server:log("Connection from %s, relaying allowed", dhost)
+		self.server:logDebug("Connection from %s, relaying allowed", dhost)
 	end
 
 	self:sendStatus(self.codes.HELO, config.settings.bind.reply_host.." Tethys SMTP is watching you...")
 	while true do
-		local line = self.socket:receive()
-		if not line then break end
-		self.server:logDebug("<<%s", line)
-		local com = line:sub(1, 4):upper()
-		local params = line:sub(6)
-		if com ~= "" then
-			if self["handle"..com] then
-				if self["handle"..com](self, params) then break end
-			else
-				self:sendStatus(self.codes.BAD_COMMAND, "Unknown command")
+		local line, err = self.socket:receive()
+		if self:checkTimeout() then self.server:logDebug("Ending receiver loop, timeout exceeded") break end
+		if not line and err ~= "timeout" then self.server:logDebug("Ending receiver loop, no more lines") break end
+		if line then
+			self.server:logDebug("<<%s", line)
+			local com = line:sub(1, 4):upper()
+			local params = line:sub(6)
+			if com ~= "" then
+				if self["handle"..com] then
+					if self["handle"..com](self, params) then break end
+				else
+					local err = true
+					for i, p in ipairs(self.server.smtp_plugins) do
+						local res = p:handleCommand(self, com, params)
+						if res ~= nil then err = false end
+						if res == true then break end
+					end
+					if err then
+						self:sendStatus(self.codes.BAD_COMMAND, "Unknown command")
+					end
+				end
 			end
 		end
 	end
-	self.server:log("Connection from %s ended", dhost)
+	self.server:logDebug("Connection from %s ended", dhost or "Unknown")
 
 	-- Now we can process filters, as this can take time
 	for i, state in ipairs(self.states_to_process) do
@@ -362,11 +388,13 @@ function SMTPReceiver:handle()
 	collectgarbage("collect")
 end
 
-function SMTPReceiver:__init(server, socket)
+function SMTPReceiver:__init(server, socket, raw_socket)
 	local t = {}
 	t.server = server
 	t.socket = socket
+	t.raw_socket = raw_socket
 	t.states_to_process = {}
+	t.start_time = os.time()
 
 	t = oo.rawnew(self, t)
 	return t

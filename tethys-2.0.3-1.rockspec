@@ -1,8 +1,16 @@
+-- This file was automatically generated for the LuaDist project.
+
 package = "tethys"
-version = "2.0.1-1"
+version = "2.0.3-1"
+-- LuaDist source
 source = {
-   url = "http://lua.net-core.org/dl/tethys/tethys-2.0.1.tar.gz",
+  tag = "2.0.3-1",
+  url = "git://github.com/LuaDist-testing/tethys.git"
 }
+-- Original source
+-- source = {
+--    url = "http://lua.net-core.org/dl/tethys/tethys-2.0.3.tar.gz",
+-- }
 description = {
    summary = "Tethys SMTP Server",
    detailed = [[
@@ -13,6 +21,7 @@ description = {
 }
 dependencies = {
    "lua >= 5.1",
+   "copas >= 1.1.4",
    "loop >= 2.2",
    "config >= 1.0.0",
    "luadns >= 1.0.0",
@@ -45,11 +54,13 @@ build = {
         ['tethys2.util.MailFormat'] = 'tethys2/util/MailFormat.lua',
         ['tethys2.util.Relaydir'] = 'tethys2/util/Relaydir.lua',
         ['tethys2.util.util'] = 'tethys2/util/util.lua',
+        ['tethys2.util.LDAP'] = 'tethys2/util/LDAP.lua',
         ['tethys2.plugins.deposit.DiskSpool'] = 'tethys2/plugins/deposit/DiskSpool.lua',
         ['tethys2.plugins.deposit.Relay'] = 'tethys2/plugins/deposit/Relay.lua',
         ['tethys2.plugins.deposit.Pipe'] = 'tethys2/plugins/deposit/Pipe.lua',
         ['tethys2.plugins.deposit.Mailman'] = 'tethys2/plugins/deposit/Mailman.lua',
         ['tethys2.plugins.deposit.Plugin'] = 'tethys2/plugins/deposit/Plugin.lua',
+        ['tethys2.plugins.deposit.Log'] = 'tethys2/plugins/deposit/Log.lua',
         ['tethys2.plugins.filter.MySQL'] = 'tethys2/plugins/filter/MySQL.lua',
         ['tethys2.plugins.filter.SpamAssassin'] = 'tethys2/plugins/filter/SpamAssassin.lua',
         ['tethys2.plugins.filter.FixMail'] = 'tethys2/plugins/filter/FixMail.lua',
@@ -57,6 +68,9 @@ build = {
         ['tethys2.plugins.user_manager.MySQL'] = 'tethys2/plugins/user_manager/MySQL.lua',
         ['tethys2.plugins.user_manager.UnixAlias'] = 'tethys2/plugins/user_manager/UnixAlias.lua',
         ['tethys2.plugins.user_manager.Plugin'] = 'tethys2/plugins/user_manager/Plugin.lua',
+        ['tethys2.plugins.user_manager.LDAP'] = 'tethys2/plugins/user_manager/LDAP.lua',
+        ['tethys2.plugins.smtp.Plugin'] = 'tethys2/plugins/smtp/Plugin.lua',
+        ['tethys2.plugins.smtp.Control'] = 'tethys2/plugins/smtp/Control.lua',
       },
       bin = {
         ["tethys2-receiver"] = "bin/tethys2-receiver",

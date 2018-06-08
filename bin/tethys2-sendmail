@@ -1,14 +1,32 @@
-#!/usr/bin/env lua
-pcall(require, 'luarocks.require')
+#!/bin/sh
+# Leave empty to use a non-self contained
+SELFCONTAINED=""
+
+# The lua interpreter
+LUA=lua
+
+# If we are self contained use our own libs and interpreter
+if test -n "$SELFCONTAINED"; then
+	export TETHYS_RUNNER="$SELFCONTAINED"/extras/lua_runner.lua
+	LUA="$SELFCONTAINED"/extras/lua-5.1.4/src/lua
+	cd "$SELFCONTAINED"
+fi
+
+# Run it!
+"$LUA" -e "
+local runner = os.getenv('TETHYS_RUNNER') and loadfile(os.getenv('TETHYS_RUNNER'))
+if runner then runner() else pcall(require, 'luarocks.require') end
 require('config')
 require('lfs')
 
-local file = os.getenv("TETHYS_CONF") or "/etc/tethys2/smtp.config.lua"
+local file = os.getenv('TETHYS_CONF') or '/etc/tethys2/smtp.config.lua'
+local args = {}
+for i in ([[$*]]):gmatch('[^ ]+') do table.insert(args, i) end
 
-if not lfs.attributes(file) or not arg[1] then
-	io.stderr:write('Usage: "tethys-sendmail <account>@<host> ..."\n')
-	io.stderr:write("The configuration file specified by the environment $TETHYS_CONF if sued.\n")
-	io.stderr:write("If nothing else it will use /etc/tethys/smtp.config.lua if it exists.\n")
+if not lfs.attributes(file) or not args[1] then
+	io.stderr:write('Usage: \"tethys2-sendmail <account>@<host> ...\"\n')
+	io.stderr:write('The configuration file specified by the environment \$TETHYS_CONF if used.\n')
+	io.stderr:write('If nothing else it will use /etc/tethys/smtp.config.lua if it exists.\n')
 	return 1
 end
 
@@ -16,11 +34,12 @@ end
 config.load(file)
 
 -- Add to the path, only if not using LuaRocks
-if not os.getenv("LUAROCKS_CONFIG") then
-	package.path = config.settings.tethys.."/?.lua;"..package.path
+if not os.getenv('LUAROCKS_CONFIG') then
+	package.path = config.settings.tethys..'/?.lua;'..package.path
 end
 
 -- Now require the main files and run
 require('tethys2.core.Sendmail')
 server = tethys2.core.Sendmail.new()
-server:start(unpack(arg))
+server:start(unpack(args))
+"

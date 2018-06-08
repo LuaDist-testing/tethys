@@ -1,7 +1,7 @@
 ***** Dependencies *****
 
 - Lua 5.1: http://lua.org/
-- Kepler Project(modules: logging, socket, luasql.mysql) :
+- Kepler Project(modules: logging, socket, luasql.mysql, copas) :
   http://www.keplerproject.org/
 - Telesto Librairies: http://lua.net-core.org/
 - lposix: http://luaforge.net/projects/luaposix/

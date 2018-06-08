@@ -70,4 +70,7 @@ end
 function Relaydir:checkRepository()
 	oo.superclass(Relaydir).checkRepository(self)
 	lfs.mkdir("retry")
+	if self.uid and self.gid then
+		posix.chown("retry", self.uid, self.gid)
+	end
 end

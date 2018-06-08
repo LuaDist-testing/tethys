@@ -16,7 +16,7 @@ function DiskSpool:deliverMail(to, state, params)
 	to.filtered = to.filtered or {}
 	local spool_path
 	local uid, gid = nil, nil
-	if not params then
+	if not params or params == "" then
 		spool_path = config.settings.deposit.spool_path.."/"..to.host.."/"..to.account.."/"..MailFormat.class.path_ext
 		-- Handle maildir++ for filtering
 		if MailFormat.class.type == "maildir" then

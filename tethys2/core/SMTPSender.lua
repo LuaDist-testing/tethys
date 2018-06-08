@@ -23,11 +23,11 @@ function SMTPSender:checkCode(s, code)
 		if not line then self.currentError = "No response from server" return false end
 		self.server:logDebug("<<%s,", line)
 	end
-	if line:find(code) then 
-		return true 
+	if line:find(code) then
+		return true
 	else
-		self.currentError = line 
-		return false 
+		self.currentError = line
+		return false
 	end
 end
 
@@ -115,6 +115,7 @@ function SMTPSender:send()
 	local thread_return = { active_threads = 0, errors = {}, nb_errors = 0 }
 	for host, data in pairs(route) do
 		local mx = dns.resolveMX(host)
+		self.server:log("Resolved mx for %s to %s (%s)", host, tostring(mx), tostring(mx and mx.host))
 
 		-- Make a thread for each server to call, so they answer in parallel
 		local thread = coroutine.create(function()
@@ -126,8 +127,6 @@ function SMTPSender:send()
 				thread_return.errors[addr] = { mx = mx, reason = reason }
 				thread_return.nb_errors = thread_return.nb_errors + 1
 			end
-			-- We are done, count one less thread
-			thread_return.active_threads = thread_return.active_threads - 1
 		end)
 
 		-- Count one more thread to wait
@@ -136,13 +135,18 @@ function SMTPSender:send()
 		-- Register the thread and add a trap for errors
 		scheduler:register(thread)
 		scheduler.traps[thread] = function(self2, thread, success, errmsg)
+			-- We are done, count one less thread
+			thread_return.active_threads = thread_return.active_threads - 1
+
 			if not success and errmsg then self.server:logError("[lua-error] %s", errmsg) end
 		end
 	end
+
 	-- Wait until all threads return
 	while thread_return.active_threads > 0 do
 		scheduler:suspend(1)
 	end
+
 	local errors = thread_return.errors
 	local nb_errors = thread_return.nb_errors
 

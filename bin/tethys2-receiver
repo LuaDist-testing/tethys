@@ -1,12 +1,28 @@
-#!/usr/bin/env lua
-pcall(require, 'luarocks.require')
+#!/bin/sh
+# Leave empty to use a non-self contained
+SELFCONTAINED=""
+
+# The lua interpreter
+LUA=lua
+
+# If we are self contained use our own libs and interpreter
+if test -n "$SELFCONTAINED"; then
+	export TETHYS_RUNNER="$SELFCONTAINED"/extras/lua_runner.lua
+	LUA="$SELFCONTAINED"/extras/lua-5.1.4/src/lua
+	cd "$SELFCONTAINED"
+fi
+
+# Run it!
+"$LUA" - $* <<EOF
+local runner = os.getenv("TETHYS_RUNNER") and loadfile(os.getenv("TETHYS_RUNNER"))
+if runner then runner() else pcall(require, 'luarocks.require') end
 require('config')
 require('lfs')
 
 local file = arg[1] or os.getenv("TETHYS_CONF") or "/etc/tethys2/smtp.config.lua"
 
 if not lfs.attributes(file) then
-	io.stderr:write("Usage: tethys-receiver <config-file>\n")
+	io.stderr:write("Usage: tethys2-receiver <config-file>\n")
 	io.stderr:write("If no config-file is specified it will use the file specified by the environment $TETHYS_CONF.\n")
 	io.stderr:write("If nothing else it will use /etc/tethys/smtp.config.lua if it exists.\n")
 	return 1
@@ -24,3 +40,4 @@ end
 require('tethys2.core.ReceiverServer')
 server = tethys2.core.ReceiverServer.new()
 server:start()
+EOF
