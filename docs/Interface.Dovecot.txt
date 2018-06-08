@@ -1,0 +1,10 @@
+Interfacing with Dovecot(http://www.dovecot.org/) to use as POP3 and IMAP server is very easy:
+
+1. in /etc/dovecot.conf set the authentification method as MySQL
+2. in the dovecot sql configuration:
+   1- Set the login/pass/database to Tethys's one
+   2- Set password_query as: SELECT CONCAT(acc_s_name, '@', acc_s_host) AS user, acc_s_pass AS password FROM tAccount WHERE acc_s_name='%n' AND acc_s_host='%d'
+   3- Set user_query as: SELECT CONCAT('/var/tethys/domains/', acc_s_host, '/', acc_s_name, '/') AS home, 89 AS uid, 89 AS gid FROM tAccount WHERE acc_s_name='%n' AND acc_s_host='%d'
+      (Obviously replace the paths, uid and gid with correct ones for your system)
+
+You are done, Dovecot should now use Tethys database for auth purposes and find the maildirs.

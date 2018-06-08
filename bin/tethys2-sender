@@ -1,0 +1,26 @@
+#!/usr/bin/env lua
+pcall(require, 'luarocks.require')
+require('config')
+require('lfs')
+
+local file = arg[1] or os.getenv("TETHYS_CONF") or "/etc/tethys2/smtp.config.lua"
+
+if not lfs.attributes(file) then
+	io.stderr:write("Usage: tethys-sender <config-file>\n")
+	io.stderr:write("If no config-file is specified it will use the file specified by the environment $TETHYS_CONF.\n")
+	io.stderr:write("If nothing else it will use /etc/tethys/smtp.config.lua if it exists.\n")
+	return 1
+end
+
+-- Load the configuration
+config.load(file)
+
+-- Add to the path, only if not using LuaRocks
+if not os.getenv("LUAROCKS_CONFIG") then
+	package.path = config.settings.tethys.."/?.lua;"..package.path
+end
+
+-- Now require the main files and run
+require('tethys2.core.SenderServer')
+server = tethys2.core.SenderServer.new()
+server:start()

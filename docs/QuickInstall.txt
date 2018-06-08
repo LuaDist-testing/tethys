@@ -1,0 +1,43 @@
+## Using virtual accounts with MySQL
+
+Using this setup you will have a mail system with virtual users handled by MySQL.
+
+Create a mysql database for Tethys and a user with SELECT and CREATE TABLE grants.
+
+Copy the file config/smtp.config.lua in the distribution to /etc/tethys2/smtp.config.lua.
+Edit it to fit your system, the file is commented and most values should work by default.
+
+Append to it the content of config/mysql.user-manager.config.lua and 
+config/unixalias.user-manager.config.lua. 
+Edit the values to fit with your MySQL configuration.
+
+Start Tethys (bin/tethys2-receiver and bin/tethys2-sender).
+
+Log in mysql and start creating accounts in the table tAccount and add hosts in tHost.
+By default there will be one host entry for the main domain defined in the config file
+and one entry for a postmaster account on this domain.
+You can add a new host this way:
+INSERT INTO tHost SET hst_s_host='foo.org', hst_e_default='bounce';
+And a new account:
+INSERT INTO tAccount SET acc_s_name='myuser', acc_s_host='foo.org', acc_e_type='account';
+
+If you want to use an account to check mails with Dovecot (check the dovecot interfacing
+docs) or use an account to allow SMTP login from remote hosts to relay mails you must
+set the acc_s_pass to the plain text password you wish to use.
+
+Well done, you can now receive and send emails!
+
+## Using real unix system accounts
+
+Using this setup you will have a mail system delivering to unix system accounts and
+using unix alias file to do aliases.
+
+Copy the file config/smtp.config.lua in the distribution to /etc/tethys2/smtp.config.lua.
+Edit it to fit your system, the file is commented and most values should work by default.
+
+Append to it the content of config/unixalias.user-manager.config.lua.
+Edit the values to fit your system.
+
+Start Tethys (bin/tethys2-receiver and bin/tethys2-sender).
+
+Well done, you can now receive and send emails!

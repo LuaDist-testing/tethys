@@ -1,0 +1,22 @@
+This plugin works with the DiskSpool/Maildir deposit plugin and allows it to handle maildir++
+format, that is maildir with sub-maildirs.
+
+Each line is a filter configured as follow:
+- acc_s_name / acc_s_host: the <account>@<host> mail address corresponding to the account to filter for (use 'account' types, not aliases)
+- dft_e_type: 'header'/'notheader' to filter on a mail header or 'lua' for a custom lua function
+- dft_s_param: The lua code for lua filter. For 'header'/'notheader' it is (ALWAYS in lowercase):
+               <header-field>:<string to match>
+- dft_ee_result:
+  - delete: delete the mail
+  - move: move to the sub-maildir of name specified in "dft_s_dest"
+  - read: mark as already read(drops in cur/ instead of new/ of the maildir)
+
+Exemple:
+   acc_s_name: darkgod
+   acc_s_host: net-core.org
+   dft_e_type: header
+  dft_s_param: subject:tethys
+dft_ee_result: move
+   dft_s_dest: Tethys
+
+This will move all mails whose subject contains "tethys" into a maildir known as "Tethys" for the user darkgod@net-core.org

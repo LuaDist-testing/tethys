@@ -1,0 +1,11 @@
+Interfacing with Getmail(a replacement for fetchmail; http://pyropus.ca/software/getmail/) is very easy.
+
+If you just want to use getmail to fetch mail from distant hosts and use Tethys filters just configure
+the [destination] section as follow:
+type = MDA_external
+path = /usr/local/tethys/bin/tethys-localdrop
+arguments = ("account", "host")
+user = mail
+group = mail
+
+Change the values as needed, and you are now set!

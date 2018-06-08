@@ -1,0 +1,47 @@
+package = "tethys"
+version = "2.0.0-1"
+source = {
+   url = "http://lua.net-core.org/dl/tethys/tethys-2.0.0.tar.gz",
+}
+description = {
+   summary = "Tethys SMTP Server",
+   detailed = [[
+      Easy to use, small, understandable, extensible SMTP server.
+   ]],
+   license = "GPL-3",
+   homepage = "http://lua.net-core.org/sputnik.lua?p=Tethys:About"
+}
+dependencies = {
+   "lua >= 5.1",
+   "config >= 1.0.0",
+   "luadns >= 1.0.0",
+   "luadaemon >= 1.0.0",
+   "luafam >= 1.0.0",
+--   "luasql-mysql >= 1.0.0",
+   "copas >= 1.1.1",
+   "lposix >= 20031107-1",
+   "luafilesystem >= 1.3.0",
+   "luasyslog >= 1.0.0",
+   "luasocket >= 2.0.2",
+}
+build = {
+   type = "none",
+   install = {
+      lua = {
+##FILES##
+      },
+      bin = {
+        ["tethys2-receiver"] = "bin/tethys2-receiver",
+        ["tethys2-sender"] = "bin/tethys2-sender",
+        ["tethys2-sendmail"] = "bin/tethys2-sendmail",
+        ["tethys2-localdrop"] = "bin/tethys2-localdrop",
+        ["tethys2-mailman"] = "bin/tethys2-mailman.sh",
+      },
+      conf = {
+        ["smtp-config"] = "config/smtp.config.lua",
+        ["mysql-filter-config"] = "config/mysql.filter.config.lua",
+        ["mysql-usermanager-config"] = "config/mysql.user_manager.config.lua",
+        ["unixalias-usermanager-config"] = "config/unixalias.user_manager.config.lua",
+      },
+   }
+}
