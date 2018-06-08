@@ -1,10 +1,10 @@
 -- This file was automatically generated for the LuaDist project.
 
 package = "tethys"
-version = "2.0.3-1"
+version = "2.0.3-2"
 -- LuaDist source
 source = {
-  tag = "2.0.3-1",
+  tag = "2.0.3-2",
   url = "git://github.com/LuaDist-testing/tethys.git"
 }
 -- Original source
@@ -29,7 +29,7 @@ dependencies = {
    "luafam >= 1.0.0",
    "luasql-mysql >= 1.0.0",
    "copas >= 1.1.1",
-   "lposix >= 20031107-1",
+   "luaposix >= 5.1.2",
    "luafilesystem >= 1.3.0",
    "luasyslog >= 1.0.0",
    "luasocket >= 2.0.2",
