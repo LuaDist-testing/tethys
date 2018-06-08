@@ -10,7 +10,8 @@ new = SQL
 class = SQL
 
 function SQL:__init(tbl)
-	local obj = {}
+	if not tbl then return end
+	local obj = { con_info = tbl }
 	obj.env = mysql:mysql()
 	if not obj.env then return end
 	obj.con = obj.env:connect(tbl.base, tbl.user, tbl.pass, tbl.host)
@@ -21,7 +22,14 @@ end
 
 function SQL:execute(sql, ...)
 	sql = sql:format(base.unpack(arg))
-	return self.con:execute(sql)
+	local res, err = self.con:execute(sql)
+	if err and err:find("server has gone away") then
+		self.con = self.env:connect(self.con_info.base, self.con_info.user, self.con_info.pass, self.con_info.host)
+		if self.con then
+			return self.con:execute(sql)
+		end
+	end
+	return res, err
 end
 
 function SQL:close()

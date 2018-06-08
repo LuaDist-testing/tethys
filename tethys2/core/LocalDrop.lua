@@ -10,7 +10,7 @@ new = oo.class({ server_type="localdrop" }, Server.class)
 LocalDrop = new
 class = new
 
-function LocalDrop:start(account, host)
+function LocalDrop:thread(account, host)
 	-- Drop privilegdes but dont realy go daemon
 	self:daemonize(true)
 	self:postInit()
@@ -33,5 +33,14 @@ function LocalDrop:start(account, host)
 
 	self.deposit:deliverMail(state.to[account.."@"..host], state)
 	self.deposit:finishDelivery(state)
-	return true
 end
+
+function LocalDrop:start(account, host)
+	local thread = coroutine.create(function() self:thread(account, host) end)
+	self.scheduler:register(thread)
+	self.scheduler.traps[thread] = function(self2, thread, success, errmsg)
+		if not success and errmsg then self:logError("%s", errmsg) end
+	end
+	self.scheduler:run()
+end
+

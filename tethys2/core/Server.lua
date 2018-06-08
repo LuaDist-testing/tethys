@@ -1,6 +1,7 @@
 module(..., package.seeall)
 
 local oo = require "loop.simple"
+local scheduler = require('loop.thread.SocketScheduler')
 require'config'
 require'logging.syslog'
 require'posix'
@@ -46,6 +47,8 @@ end
 function Server:__init()
 	local t = {}
 	t = oo.rawnew(self, t)
+
+	t.scheduler = scheduler
 
 	t._log = logging.syslog("tethys2-smtp-"..self.server_type, lsyslog.FACILITY_MAIL)
 

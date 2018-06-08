@@ -27,18 +27,18 @@ function MIMEMail:unquote(str)
 		local cd = iconv.new("UTF-8//IGNORE", charset)
 		if type == "B" then
 			data = mime.unb64(data)
-			data = cd:iconv(data) or data
+			data = cd:iconv(data or "") or data or ""
 			return data
 		elseif type == "Q" then
-			data = mime.unb64(data)
-			data = cd:iconv(data) or data
+			data = mime.unqp(data)
+			data = cd:iconv(data or "") or data or ""
 			return data
 		end
 	end)
 	return str
 end
 
-function MIMEMail:parse()
+function MIMEMail:parse(only_header)
 	local header_end = self.start_line or 1
 	local last_header = nil
 	for i = self.start_line or 1, #(self.data) do
@@ -64,12 +64,13 @@ function MIMEMail:parse()
 			end
 		end
 	end
+	if only_header then return end
 
 	-- Multipart message, parse all subparts
 	local subboundary, subboundary_end
 	if self.mail.headers["content-type"] and self.mail.headers["content-type"]:find("multipart/") then
 		local i, j
-		i, j, subboundary = self.mail.headers["content-type"]:find('boundary="([^"]+)"')
+		i, j, subboundary = self.mail.headers["content-type"]:find('boundary="?([^"]+)"?')
 		subboundary = "--"..subboundary
 		subboundary_end = subboundary.."--"
 	end
@@ -90,6 +91,7 @@ function MIMEMail:parse()
 		else
 			-- Ok a normal body line, decode if needed
 			local set_next = false
+			local no_insert = false
 			if self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"] == "quoted-printable" then
 				local str, res, j =  line, "", i
 				if line:sub(#line) == "=" then
@@ -97,13 +99,12 @@ function MIMEMail:parse()
 				end
 				line = mime.unqp(line)
 			elseif self.mail.headers["content-transfer-encoding"] and self.mail.headers["content-transfer-encoding"] == "base64" then
-				line = mime.unb64(line)
 			end
 			if not next_line_append then
-				table.insert(self.mail.body, line)
+				if not no_insert then table.insert(self.mail.body, (line or "")) end
 			else
 				next_line_append = false
-				self.mail.body[#(self.mail.body)] = self.mail.body[#(self.mail.body)]..line
+				self.mail.body[#(self.mail.body)] = self.mail.body[#(self.mail.body)]..(line or "")
 			end
 			if set_next then next_line_append = true end
 		end

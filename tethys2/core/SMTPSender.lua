@@ -18,7 +18,17 @@ function SMTPSender:checkCode(s, code)
 	local line = s:receive()
 	if not line then self.currentError = "No response from server" return false end
 	self.server:logDebug("<<%s,", line)
-	if line:find(code) then return true else self.currentError = line return false end
+	while line:find("^...%-") do
+		line = s:receive()
+		if not line then self.currentError = "No response from server" return false end
+		self.server:logDebug("<<%s,", line)
+	end
+	if line:find(code) then 
+		return true 
+	else
+		self.currentError = line 
+		return false 
+	end
 end
 
 function SMTPSender:writeLine(s, str)
@@ -65,11 +75,22 @@ function SMTPSender:sendMail(socket, mxs, host, data, route_raw)
 
 	self:writeLine(s, "DATA")
 	if not self:checkCode(s, "^354") then return util.reverseTable(data, self.currentError) end
-	for line in io.lines(self.path.."/"..self.filename, "r") do
-		if line:find("^%.") then
-			line = "."..line
+	-- Inlined data
+	if not self.path and not self.filename and self.inline_data then
+		for i, line in ipairs(self.inline_data) do
+			if line:find("^%.") then
+				line = "."..line
+			end
+			self:writeLine(s, line)
 		end
-		self:writeLine(s, line)
+	-- Read data from file
+	else
+		for line in io.lines(self.path.."/"..self.filename, "r") do
+			if line:find("^%.") then
+				line = "."..line
+			end
+			self:writeLine(s, line)
+		end
 	end
 	self:writeLine(s, ".")
 	if not self:checkCode(s, "^2..") then return util.reverseTable(data, self.currentError) end
@@ -103,7 +124,7 @@ function SMTPSender:send()
 
 			for addr, reason in pairs(error_user) do
 				thread_return.errors[addr] = { mx = mx, reason = reason }
-				thread_return.nb_errors = nb_errors + 1
+				thread_return.nb_errors = thread_return.nb_errors + 1
 			end
 			-- We are done, count one less thread
 			thread_return.active_threads = thread_return.active_threads - 1
@@ -115,7 +136,7 @@ function SMTPSender:send()
 		-- Register the thread and add a trap for errors
 		scheduler:register(thread)
 		scheduler.traps[thread] = function(self2, thread, success, errmsg)
-			if not success and errmsg then self:logError("[lua-error] %s", errmsg) end
+			if not success and errmsg then self.server:logError("[lua-error] %s", errmsg) end
 		end
 	end
 	-- Wait until all threads return

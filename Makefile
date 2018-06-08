@@ -1,5 +1,5 @@
 MODULE = tethys
-VERSION = 2.0.0
+VERSION = 2.0.1
 
 default: setup
 
@@ -13,7 +13,7 @@ clean:
 package: clean setup
 	mkdir -p dist/$(MODULE)-$(VERSION)
 	mkdir -p dist/$(MODULE)-$(VERSION)/config
-	cp -r bin docs tethys2 rocks COPYING Makefile dist/$(MODULE)-$(VERSION)
+	cp -r bin docs tethys2 rocks README changelog.txt COPYING Makefile dist/$(MODULE)-$(VERSION)
 	cp config/*.config.lua dist/$(MODULE)-$(VERSION)/config/
 	find dist/$(MODULE)-$(VERSION) -name .svn | xargs rm -rf
 	find dist/$(MODULE)-$(VERSION) -name private | xargs rm -rf

@@ -1,0 +1,18 @@
+changelog.keys = {
+        m = "Misc",
+        B = "Bug",
+	P = "Plugins",
+        V = "Version",
+}
+changelog.text = [[
+[B]- SMTPSender correctly handles multiple greeting lines
+[P]- Added a SpamAssassin plugin (requires a spamd daemon)
+[P]- Added FixMail plugin that can well, fix mails (add missing date, ...)
+[B]- Fixed LocalDrop to work
+[B]- Fixed SendMail to allow to send to external emails
+[m]- Allow SQL objects to reconnect if connection is lost
+[B]- Fix handling of some mime messages in MIMEMail
+[m]- Iconv dependancy (for MIMEMail)
+
+[V]- Tethys 2.0.1 aka "All your moons are belong to us!"
+]]

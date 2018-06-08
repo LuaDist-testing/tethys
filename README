@@ -1,0 +1,50 @@
+***** Dependencies *****
+
+- Lua 5.1: http://lua.org/
+- Kepler Project(modules: logging, socket, luasql.mysql) :
+  http://www.keplerproject.org/
+- Telesto Librairies: http://lua.net-core.org/
+- lposix: http://luaforge.net/projects/luaposix/
+- loop: http://loop.luaforge.net
+- lua-iconv: http://luaforge.net/projects/lua-iconv/
+
+***** Installation *****
+
+1. Install all the dependencies (You dont need to do this if using LuaRocks
+   if should have done it for you already)
+2. Create a mysql database and an appropriate user with at least insert,
+   select, create table rights.
+   (You only need select rights if you create the tables yourself, see
+   the plugins code for table schema)
+3. Fill in the database tables:
+   1- tHost: Add each domain name(FQDN) that the server recognizes as its own
+   2- tAccount: Add each account that the server should recognizes.
+      - acc_s_name / acc_s_host: the <account>@<host> parts of the mail address
+      - acc_e_type:
+        - 'account' real(but not unix user) account
+        - 'alias' alias to an other account
+        - 'forward' relay to external domain
+        - 'deposit' do not use the default deposit plugin
+      - acc_e_active: 'yes' to active the account, 'no' to disable it
+      - acc_s_pass: The password for the account, or NULL
+        (only for type set to 'account')
+      - ass_s_param: For 'alias' type a comma-separed list of accounts to forward,
+        for 'forward' the external address, for 'deposit' a config string
+        depending on the plugin
+   3- (Optionnal) Configure tDropFilter to filter mails into various maildirs,
+      see docs/Plugin.Filter.txt
+4. Configure config/smtp.config.lua to meet your needs(copy it
+   to /etc/tethys/smtp.config.lua for Tethys to find it automatically)
+5. Create the directories you listed in the configuration file(and set
+   owner/group accordingly if needed)
+6. Run:
+   - bin/tethys2-receiver (only if you need to receive mail)
+   - bin/tethys2-sender (only if you need to send mail)
+
+***** Extra Programs *****
+- bin/tethys2-localdrop: Takes an account@host that is local to this server and
+  drop the mail it receives from standart input in it, using the deposit and
+  filter plugins specified in the configuration file
+- bin/tethys2-sendmail: Takes a list of account@host and delivers the mail it
+  gets from standart input to the relay-maildir for the sender daemon to relay.
+  Basically this .. sends mails ..

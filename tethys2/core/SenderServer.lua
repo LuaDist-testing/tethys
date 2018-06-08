@@ -4,7 +4,6 @@ local oo = require "loop.simple"
 local Server = require'tethys2.core.Server'
 local SMTPSender = require'tethys2.core.SMTPSender'
 local fam = require('fam')
-local scheduler = require('loop.thread.SocketScheduler')
 require'posix'
 require'lfs'
 require'config'
@@ -39,17 +38,17 @@ function SenderServer:thread()
 						local smtp = SMTPSender.new(self, evt.path, evt.filename)
 						smtp:handle()
 					end)
-					scheduler:register(handler)
-					scheduler.traps[handler] = function(self2, thread, success, errmsg)
+					self.scheduler:register(handler)
+					self.scheduler.traps[handler] = function(self2, thread, success, errmsg)
 						if not success and errmsg then self:logError("[lua-error] %s", errmsg) end
 					end
 				end
 			end
-			scheduler:suspend(1)
+			self.scheduler:suspend(1)
 		end
 	end)
-	scheduler:register(FAMHandler)
-	scheduler.traps[FAMHandler] = function(self, thread, success, errmsg)
+	self.scheduler:register(FAMHandler)
+	self.scheduler.traps[FAMHandler] = function(self, thread, success, errmsg)
 		if not success and errmsg then self:logError("%s", errmsg) end
 	end
 
@@ -66,17 +65,20 @@ function SenderServer:thread()
 					posix.unlink(maildir.."/.maildir/retry/info-"..f)
 				end
 			end
-			scheduler:suspend(20)
+			self.scheduler:suspend(20)
 		end
 	end)
-	scheduler:register(RetryHandler)
-	scheduler.traps[RetryHandler] = function(self2, thread, success, errmsg)
+	self.scheduler:register(RetryHandler)
+	self.scheduler.traps[RetryHandler] = function(self2, thread, success, errmsg)
 		if not success and errmsg then self:logError("%s", errmsg) end
 	end
 end
 
 function SenderServer:start()
-	self.scheduler = scheduler
-	scheduler:register(coroutine.create(function() self:thread() end))
-	scheduler:run()
+	local thread = coroutine.create(function() self:thread() end)
+	self.scheduler:register(thread)
+	self.scheduler.traps[thread] = function(self2, thread, success, errmsg)
+		if not success and errmsg then self:logError("%s", errmsg) end
+	end
+	self.scheduler:run()
 end

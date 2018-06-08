@@ -1,7 +1,7 @@
 package = "tethys"
-version = "2.0.0-1"
+version = "2.0.1-1"
 source = {
-   url = "http://lua.net-core.org/dl/tethys/tethys-2.0.0.tar.gz",
+   url = "http://lua.net-core.org/dl/tethys/tethys-2.0.1.tar.gz",
 }
 description = {
    summary = "Tethys SMTP Server",
@@ -13,6 +13,7 @@ description = {
 }
 dependencies = {
    "lua >= 5.1",
+   "loop >= 2.2",
    "config >= 1.0.0",
    "luadns >= 1.0.0",
    "luadaemon >= 1.0.0",

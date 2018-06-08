@@ -1,15 +1,15 @@
 -- This file was automatically generated for the LuaDist project.
 
 package = "tethys"
-version = "2.0.0-1"
+version = "2.0.1-1"
 -- LuaDist source
 source = {
-  tag = "2.0.0-1",
+  tag = "2.0.1-1",
   url = "git://github.com/LuaDist-testing/tethys.git"
 }
 -- Original source
 -- source = {
---    url = "http://lua.net-core.org/dl/tethys/tethys-2.0.0.tar.gz",
+--    url = "http://lua.net-core.org/dl/tethys/tethys-2.0.1.tar.gz",
 -- }
 description = {
    summary = "Tethys SMTP Server",
@@ -21,16 +21,18 @@ description = {
 }
 dependencies = {
    "lua >= 5.1",
+   "loop >= 2.2",
    "config >= 1.0.0",
    "luadns >= 1.0.0",
    "luadaemon >= 1.0.0",
    "luafam >= 1.0.0",
---   "luasql-mysql >= 1.0.0",
+   "luasql-mysql >= 1.0.0",
    "copas >= 1.1.1",
    "lposix >= 20031107-1",
    "luafilesystem >= 1.3.0",
    "luasyslog >= 1.0.0",
    "luasocket >= 2.0.2",
+   "lua-iconv >= r3",
 }
 build = {
    type = "none",
@@ -58,6 +60,7 @@ build = {
         ['tethys2.plugins.deposit.Plugin'] = 'tethys2/plugins/deposit/Plugin.lua',
         ['tethys2.plugins.filter.SpamAssassin'] = 'tethys2/plugins/filter/SpamAssassin.lua',
         ['tethys2.plugins.filter.MySQL'] = 'tethys2/plugins/filter/MySQL.lua',
+        ['tethys2.plugins.filter.FixMail'] = 'tethys2/plugins/filter/FixMail.lua',
         ['tethys2.plugins.filter.Plugin'] = 'tethys2/plugins/filter/Plugin.lua',
         ['tethys2.plugins.user_manager.UnixAlias'] = 'tethys2/plugins/user_manager/UnixAlias.lua',
         ['tethys2.plugins.user_manager.MySQL'] = 'tethys2/plugins/user_manager/MySQL.lua',
